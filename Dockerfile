@@ -12,8 +12,8 @@ COPY app ./app
 
 EXPOSE 8000
 
-RUN export HOST=0.0.0.0
-RUN export PORT=8000
+ENV HOST=0.0.0.0
+ENV PORT=8000
 
 CMD ["uvicorn", "app.main:app", "--host", "$HOST", "--port", "$PORT"]
 
