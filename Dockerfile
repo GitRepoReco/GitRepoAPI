@@ -12,9 +12,6 @@ COPY app ./app
 
 EXPOSE 8000
 
-ENV HOST=0.0.0.0
-ENV PORT=8000
-
 CMD ["uvicorn", "app.main:app"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
