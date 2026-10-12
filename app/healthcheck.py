@@ -8,9 +8,7 @@ import sys
 import time
 import urllib.request
 import urllib.error
-import json
 import os
-from typing import Optional
 
 
 def check_endpoint(url: str, timeout: int = 5) -> tuple[bool, str]:

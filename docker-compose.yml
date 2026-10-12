@@ -33,12 +33,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-github_data}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      HOST: 0.0.0.0
-      PORT: 8000
     ports:
       - "${API_PORT:-8000}:8000"
     healthcheck:
-      test: ["CMD", "python", "app/healtcheck.py"]
+      test: ["CMD", "python", "app/healthcheck.py"]
       interval: 30s
       timeout: 5s
       retries: 3
