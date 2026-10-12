@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - master
+      - main
     tags:
       - 'v*.*.*'
       - 'v*.*'
   pull_request:
     branches:
       - master
+      - main
 
 env:
   REGISTRY: ghcr.io
