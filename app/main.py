@@ -4,9 +4,21 @@ from typing import Any
 import psycopg2
 from fastapi import FastAPI, HTTPException, Query
 from psycopg2.extras import RealDictCursor
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="GitRepoReco API", version="1.0.0")
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:4200/",               # dev Angular
+        "http://api.reporeco.duckdns.org/",     # site de l'api
+        "http://reporeco.duckdns.org/",         # site principal
+    ],
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
 
 def get_db_config() -> dict[str, Any]:
     return {
