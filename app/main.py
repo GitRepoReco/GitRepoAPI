@@ -15,6 +15,8 @@ app.add_middleware(
         "http://localhost:4200/",               # dev Angular
         "http://api.reporeco.duckdns.org/",     # site de l'api
         "http://reporeco.duckdns.org/",         # site principal
+        "http://api.gitreporeco.duckdns.org/",  # API GitRepoReco
+        "http://gitreporeco.duckdns.org/",      # site principal GitRepoReco
     ],
     allow_methods=["GET"],
     allow_headers=["*"],
