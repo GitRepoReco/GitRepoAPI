@@ -10,8 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 APP_VERSION = os.getenv("APP_VERSION", "dev")
 
-app = FastAPI(title="GitRepoReco API", version=APP_VERSION)
+start_time = datetime.now()
 
+app = FastAPI(title="GitRepoReco API", version=APP_VERSION)
 
 app.add_middleware(
     CORSMiddleware,
@@ -78,7 +79,7 @@ def healthcheck() -> dict[str, Any]:
             with conn.cursor() as cur:
                 cur.execute("SELECT 1")
                 cur.fetchone()
-        return {"status": "ok", "uptime": os.getenv("UPTIME", "unknown")}
+        return {"status": "ok", "uptime": str(datetime.now() - start_time)}
     except Exception as exc:  # pragma: no cover - defensive guard for runtime DB failure
         raise HTTPException(status_code=503, detail=f"Database unavailable: {exc}") from exc
 
@@ -261,6 +262,37 @@ def monitoring_active_queries() -> dict[str, Any]:
                 cur.execute(query)
                 rows = cur.fetchall()
         return {"count": len(rows), "items": _serialize_rows(rows)}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Unable to query database: {exc}") from exc
+
+
+@monitoring_router.get("/rate-limit/latest")
+def monitoring_rate_limit_latest() -> dict[str, Any]:
+    """Dernière entrée de monitoring.rate_limit_usage."""
+    query = """
+        SELECT
+            id,
+            timestamp,
+            limit_value,
+            remaining,
+            used,
+            cost,
+            reset_at,
+            operation_name
+        FROM monitoring.rate_limit_usage
+        ORDER BY timestamp DESC
+        LIMIT 1
+    """
+    try:
+        with get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(query)
+                row = cur.fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="No rate limit data found")
+        return _serialize_row(dict(row))
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Unable to query database: {exc}") from exc
 
