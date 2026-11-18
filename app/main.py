@@ -6,7 +6,9 @@ from fastapi import FastAPI, HTTPException, Query
 from psycopg2.extras import RealDictCursor
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="GitRepoReco API", version="1.0.0")
+APP_VERSION = os.getenv("APP_VERSION", "dev")
+
+app = FastAPI(title="GitRepoReco API", version=APP_VERSION)
 
 
 app.add_middleware(
@@ -78,6 +80,11 @@ def list_top_repositories(
     except Exception as exc:  # pragma: no cover - defensive guard for runtime DB failure
         raise HTTPException(status_code=503, detail=f"Unable to query database: {exc}") from exc
 
+@app.get("/version")
+async def get_version():
+    return {
+        "version": APP_VERSION
+    }
 
 if __name__ == "__main__":
     import uvicorn
