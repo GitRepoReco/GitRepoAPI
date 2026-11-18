@@ -78,7 +78,7 @@ def healthcheck() -> dict[str, Any]:
             with conn.cursor() as cur:
                 cur.execute("SELECT 1")
                 cur.fetchone()
-        return {"status": "ok"}
+        return {"status": "ok", "uptime": os.getenv("UPTIME", "unknown")}
     except Exception as exc:  # pragma: no cover - defensive guard for runtime DB failure
         raise HTTPException(status_code=503, detail=f"Database unavailable: {exc}") from exc
 
