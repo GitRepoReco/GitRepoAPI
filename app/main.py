@@ -187,11 +187,12 @@ def monitoring_schemas() -> dict[str, Any]:
 
 @monitoring_router.get("/tables")
 def monitoring_tables() -> dict[str, Any]:
-    """Statistiques des tables utilisateur."""
+    """Statistiques des tables utilisateur, y compris sans droits de lecture."""
     query = """
         SELECT
             schemaname,
             relname                                                                   AS table_name,
+            has_table_privilege(format('%I.%I', schemaname, relname), 'SELECT')      AS can_read,
             n_live_tup                                                                AS estimated_rows,
             n_dead_tup                                                                AS dead_rows,
             seq_scan,
@@ -199,10 +200,18 @@ def monitoring_tables() -> dict[str, Any]:
             n_tup_ins                                                                 AS inserts,
             n_tup_upd                                                                 AS updates,
             n_tup_del                                                                 AS deletes,
-            pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(relname)) AS total_size_bytes,
-            pg_indexes_size(quote_ident(schemaname) || '.' || quote_ident(relname))        AS index_size_bytes
+            CASE
+                WHEN has_table_privilege(format('%I.%I', schemaname, relname), 'SELECT')
+                THEN pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(relname))
+                ELSE NULL
+            END                                                                       AS total_size_bytes,
+            CASE
+                WHEN has_table_privilege(format('%I.%I', schemaname, relname), 'SELECT')
+                THEN pg_indexes_size(quote_ident(schemaname) || '.' || quote_ident(relname))
+                ELSE NULL
+            END                                                                       AS index_size_bytes
         FROM pg_stat_user_tables
-        ORDER BY pg_total_relation_size(quote_ident(schemaname) || '.' || quote_ident(relname)) DESC
+        ORDER BY total_size_bytes DESC NULLS LAST
     """
     try:
         with get_connection() as conn:
